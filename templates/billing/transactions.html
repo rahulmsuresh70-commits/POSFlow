@@ -1,0 +1,667 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Transactions | POSFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================================================
+   TRANSACTIONS PAGE
+========================================================= */
+
+.transactions-page {
+    padding: 35px;
+    min-height: calc(100vh - 70px);
+    background: #f8fafc;
+    font-family: 'Inter', sans-serif;
+}
+
+.transactions-page *,
+.transactions-page *::before,
+.transactions-page *::after {
+    box-sizing: border-box;
+}
+
+.transactions-page h1,
+.transactions-page h2,
+.transactions-page h3 {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ================= HEADER ================= */
+
+.transactions-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.transactions-title h2 {
+    margin: 0 0 7px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.transactions-title p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ================= FILTER CARD ================= */
+
+.transaction-filter-card {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,.06);
+}
+
+.transaction-filter-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.5fr) 180px 180px auto auto;
+    gap: 14px;
+    align-items: end;
+}
+
+.transaction-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.transaction-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.transaction-field input,
+.transaction-field select {
+    width: 100%;
+    height: 44px;
+    padding: 0 13px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: .25s ease;
+}
+
+.transaction-field input:focus,
+.transaction-field select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.10);
+}
+
+/* ================= BUTTONS ================= */
+
+.transaction-btn {
+    height: 44px;
+    border: 0;
+    border-radius: 10px;
+    padding: 0 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.transaction-btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    box-shadow: 0 5px 12px rgba(37,99,235,.20);
+}
+
+.transaction-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(37,99,235,.25);
+}
+
+.transaction-btn-light {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+.transaction-btn-light:hover {
+    background: #e2e8f0;
+}
+
+/* ================= TABLE CARD ================= */
+
+.transaction-table-card {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,.06);
+}
+
+.transaction-table-header {
+    padding: 22px 25px;
+    border-bottom: 1px solid #eef2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.transaction-table-header h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 18px;
+}
+
+.transaction-count {
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* ================= TABLE ================= */
+
+.transaction-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+.transaction-table th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: 15px 20px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.transaction-table td {
+    padding: 17px 20px;
+    border-top: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.transaction-table tbody tr {
+    transition: .2s ease;
+}
+
+.transaction-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+/* ================= INVOICE ================= */
+
+.invoice-number {
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.staff-name {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.staff-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.transaction-date {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.transaction-date strong {
+    font-size: 13px;
+    color: #334155;
+}
+
+.transaction-date span {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+/* ================= PAYMENT BADGES ================= */
+
+.payment-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.payment-cash {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.payment-card {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.payment-upi {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+/* ================= AMOUNT ================= */
+
+.transaction-total {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* ================= ITEMS ================= */
+
+.items-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+}
+
+.items-count i {
+    color: #64748b;
+}
+
+/* ================= EMPTY ================= */
+
+.transaction-empty {
+    text-align: center;
+    padding: 70px 25px;
+}
+
+.transaction-empty-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    background: #eff6ff;
+    color: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+.transaction-empty h3 {
+    margin: 0 0 7px;
+    font-size: 18px;
+    color: #0f172a;
+}
+
+.transaction-empty p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1100px) {
+    .transaction-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .transactions-page {
+        padding: 20px 15px;
+    }
+
+    .transactions-header {
+        flex-direction: column;
+        margin-bottom: 20px;
+    }
+
+    .transactions-title h2 {
+        font-size: 24px;
+    }
+
+    .transaction-filter-card {
+        padding: 16px;
+    }
+
+    .transaction-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .transaction-table-header {
+        padding: 18px;
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="transactions-page">
+
+    <!-- ================= PAGE HEADER ================= -->
+
+    <div class="transactions-header">
+
+        <div class="transactions-title">
+            <h2>Transactions</h2>
+            <p>View and manage all completed billing transactions.</p>
+        </div>
+
+    </div>
+
+
+    <!-- ================= FILTERS ================= -->
+
+    <div class="transaction-filter-card">
+
+        <form
+            method="GET"
+            action="{% url 'transaction_list' %}"
+            class="transaction-filter-form"
+        >
+
+            <div class="transaction-field">
+                <label for="search">Search Invoice</label>
+
+                <input
+                    type="text"
+                    id="search"
+                    name="search"
+                    value="{{ search }}"
+                    placeholder="Enter invoice number..."
+                >
+            </div>
+
+
+            <div class="transaction-field">
+                <label for="payment_method">Payment Method</label>
+
+                <select
+                    id="payment_method"
+                    name="payment_method"
+                >
+                    <option value="">All Payments</option>
+
+                    <option
+                        value="cash"
+                        {% if payment_method == "cash" %}selected{% endif %}
+                    >
+                        Cash
+                    </option>
+
+                    <option
+                        value="card"
+                        {% if payment_method == "card" %}selected{% endif %}
+                    >
+                        Card
+                    </option>
+
+                    <option
+                        value="upi"
+                        {% if payment_method == "upi" %}selected{% endif %}
+                    >
+                        UPI
+                    </option>
+
+                </select>
+            </div>
+
+
+            <div class="transaction-field">
+                <label for="date">Transaction Date</label>
+
+                <input
+                    type="date"
+                    id="date"
+                    name="date"
+                    value="{{ transaction_date }}"
+                >
+            </div>
+
+
+            <button
+                type="submit"
+                class="transaction-btn transaction-btn-primary"
+            >
+                <i class="fa-solid fa-filter"></i>
+                Filter
+            </button>
+
+
+            <a
+                href="{% url 'transaction_list' %}"
+                class="transaction-btn transaction-btn-light"
+                data-admin-link
+                data-page="transactions"
+            >
+                <i class="fa-solid fa-rotate-left"></i>
+                Reset
+            </a>
+
+        </form>
+
+    </div>
+
+
+    <!-- ================= TRANSACTION TABLE ================= -->
+
+    <div class="transaction-table-card">
+
+        <div class="transaction-table-header">
+
+            <h3>
+                Transaction History
+            </h3>
+
+            <span class="transaction-count">
+                {{ transactions|length }} transaction{{ transactions|length|pluralize }}
+            </span>
+
+        </div>
+
+
+        <div class="transaction-table-wrapper">
+
+            {% if transactions %}
+
+            <table class="transaction-table">
+
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Staff</th>
+                        <th>Date & Time</th>
+                        <th>Items</th>
+                        <th>Payment</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+
+                <tbody>
+
+                    {% for transaction in transactions %}
+
+                    <tr>
+
+                        <!-- Invoice -->
+
+                        <td>
+                            <span class="invoice-number">
+                                {{ transaction.invoice_number }}
+                            </span>
+                        </td>
+
+
+                        <!-- Staff -->
+
+                        <td>
+
+                            <div class="staff-name">
+
+                                <div class="staff-avatar">
+                                    {{ transaction.staff.username|first|upper }}
+                                </div>
+
+                                <span>
+                                    {{ transaction.staff.username }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Date -->
+
+                        <td>
+
+                            <div class="transaction-date">
+
+                                <strong>
+                                    {{ transaction.created_at|date:"d M Y" }}
+                                </strong>
+
+                                <span>
+                                    {{ transaction.created_at|time:"h:i A" }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <!-- Items -->
+
+                        <td>
+
+                            <span class="items-count">
+
+                                <i class="fa-solid fa-box"></i>
+
+                                {{ transaction.items.all|length }}
+
+                                item{{ transaction.items.all|length|pluralize }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- Payment -->
+
+                        <td>
+
+                            {% if transaction.payment_method == "cash" %}
+
+                                <span class="payment-badge payment-cash">
+                                    <i class="fa-solid fa-money-bill-wave"></i>
+                                    Cash
+                                </span>
+
+                            {% elif transaction.payment_method == "card" %}
+
+                                <span class="payment-badge payment-card">
+                                    <i class="fa-solid fa-credit-card"></i>
+                                    Card
+                                </span>
+
+                            {% elif transaction.payment_method == "upi" %}
+
+                                <span class="payment-badge payment-upi">
+                                    <i class="fa-solid fa-mobile-screen-button"></i>
+                                    UPI
+                                </span>
+
+                            {% else %}
+
+                                <span class="payment-badge">
+                                    {{ transaction.payment_method|title }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- Total -->
+
+                        <td>
+
+                            <span class="transaction-total">
+                                ₹{{ transaction.total|floatformat:2 }}
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            {% else %}
+
+            
+
+            <div class="transaction-empty">
+
+                <div class="transaction-empty-icon">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+
+                <h3>No Transactions Found</h3>
+
+                <p>
+                    No billing transactions match your current filters.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,1027 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Billing | POSFlow{% endblock %}
+
+{% block extra_css %}
+
+<style>
+/* =========================================================
+   BILLING PAGE ONLY
+   This CSS is scoped so it will NOT affect Admin Sidebar
+   or Admin Header.
+========================================================= */
+
+.billing-page {
+    padding: 35px;
+    min-height: calc(100vh - 70px);
+    background: #f8fafc;
+    font-family: 'Inter', sans-serif;
+}
+
+.billing-page *,
+.billing-page *::before,
+.billing-page *::after {
+    box-sizing: border-box;
+}
+
+.billing-page h1,
+.billing-page h2,
+.billing-page h3,
+.billing-page h4,
+.billing-page h5 {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ================= PAGE HEADING ================= */
+
+.billing-heading {
+    margin-bottom: 30px;
+}
+
+.billing-heading h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 8px;
+}
+
+.billing-heading p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ================= POS LAYOUT ================= */
+
+.billing-pos-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(350px, .9fr);
+    gap: 25px;
+    align-items: start;
+}
+
+/* ================= PANEL ================= */
+
+.billing-panel {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,.08);
+    overflow: hidden;
+    border: 1px solid #eef2f7;
+}
+
+.billing-panel-header {
+    padding: 25px 30px;
+    border-bottom: 1px solid #eef2f7;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.billing-panel-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #0f172a;
+}
+
+.billing-panel-header p {
+    margin: 4px 0 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* ================= PRODUCT SEARCH ================= */
+
+.billing-product-search {
+    position: relative;
+    width: 260px;
+}
+
+.billing-product-search input {
+    width: 100%;
+    padding: 11px 15px 11px 40px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+
+    background: #f8fafc;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+
+    transition: all .3s ease;
+}
+
+.billing-product-search input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.10);
+}
+
+.billing-product-search i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+/* ================= PRODUCTS GRID ================= */
+
+.billing-products-grid {
+    padding: 30px;
+
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fill, minmax(190px, 1fr));
+
+    gap: 20px;
+
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+}
+
+/* ================= PRODUCT CARD ================= */
+
+.billing-product-card {
+    background:
+        linear-gradient(135deg,#ffffff,#f8fafc);
+
+    border: 1px solid #e8edf4;
+    border-radius: 16px;
+
+    padding: 20px;
+
+    transition: all .3s cubic-bezier(.4,0,.2,1);
+}
+
+.billing-product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,.10);
+    border-color: #60a5fa;
+}
+
+.billing-product-icon {
+    width: 52px;
+    height: 52px;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);
+
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+
+    margin-bottom: 16px;
+}
+
+.billing-product-card h4 {
+    font-size: 16px;
+    color: #0f172a;
+    margin: 0 0 7px;
+}
+
+.billing-product-sku {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+}
+
+.billing-product-price {
+    font-size: 19px;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 5px;
+}
+
+.billing-stock {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 15px;
+}
+
+.billing-stock strong {
+    color: #10b981;
+}
+
+/* ================= ADD BUTTON ================= */
+
+.billing-add-btn {
+    width: 100%;
+    padding: 10px 14px;
+
+    border: none;
+    border-radius: 10px;
+
+    background:
+        linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);
+
+    color: white;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all .3s ease;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+}
+
+.billing-add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(59,130,246,.25);
+}
+
+/* ================= CART ================= */
+
+.billing-cart-panel {
+    position: sticky;
+    top: 90px;
+}
+
+.billing-cart-body {
+    padding: 25px;
+}
+
+.billing-cart-items {
+    max-height: 430px;
+    overflow-y: auto;
+}
+
+.billing-cart-item {
+    padding: 15px 0;
+
+    border-bottom: 1px solid #eef2f7;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.billing-cart-item:last-child {
+    border-bottom: none;
+}
+
+.billing-cart-item-info {
+    min-width: 0;
+}
+
+.billing-cart-item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.billing-cart-item-meta {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.billing-cart-item-total {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.billing-cart-item-total strong {
+    display: block;
+    color: #1e293b;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.billing-remove-btn {
+    border: none;
+    background: transparent;
+
+    color: #ef4444;
+
+    cursor: pointer;
+    font-size: 12px;
+
+    text-decoration: none;
+
+    transition: all .2s ease;
+}
+
+.billing-remove-btn:hover {
+    color: #b91c1c;
+}
+
+/* ================= EMPTY ================= */
+
+.billing-empty {
+    text-align: center;
+    padding: 50px 15px;
+    color: #94a3b8;
+}
+
+.billing-empty i {
+    font-size: 42px;
+    margin-bottom: 15px;
+    opacity: .55;
+}
+
+.billing-empty p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* ================= SUMMARY ================= */
+
+.billing-summary {
+    border-top: 1px solid #eef2f7;
+    padding: 25px;
+}
+
+.billing-summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+
+    font-size: 14px;
+    color: #64748b;
+
+    margin-bottom: 12px;
+}
+
+.billing-summary-row.total {
+    padding-top: 15px;
+    margin-top: 15px;
+
+    border-top: 1px dashed #dbe3ed;
+
+    color: #0f172a;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.billing-payment-title {
+    font-family: 'Poppins', sans-serif;
+
+    font-size: 15px;
+    font-weight: 600;
+
+    color: #0f172a;
+
+    margin: 25px 0 12px;
+}
+
+/* ================= PAYMENT ================= */
+
+.billing-payment-options {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+}
+
+.billing-payment-option {
+    position: relative;
+}
+
+.billing-payment-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.billing-payment-option label {
+    min-height: 72px;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+
+    background: #f8fafc;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    color: #64748b;
+    font-size: 12px;
+
+    cursor: pointer;
+
+    transition: all .3s ease;
+}
+
+.billing-payment-option label i {
+    font-size: 18px;
+}
+
+.billing-payment-option input:checked + label {
+    color: #3b82f6;
+    border-color: #3b82f6;
+    background: rgba(59,130,246,.08);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.08);
+}
+
+/* ================= CHECKOUT ================= */
+
+.billing-checkout-btn {
+    width: 100%;
+
+    margin-top: 20px;
+    padding: 15px;
+
+    border: none;
+    border-radius: 12px;
+
+    background:
+        linear-gradient(135deg,#10b981 0%,#06b6d4 100%);
+
+    color: white;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: all .3s ease;
+}
+
+.billing-checkout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(16,185,129,.20);
+}
+
+.billing-checkout-btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1200px) {
+
+    .billing-pos-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .billing-cart-panel {
+        position: static;
+    }
+
+    .billing-products-grid {
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .billing-page {
+        padding: 25px 20px;
+    }
+
+    .billing-panel-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .billing-product-search {
+        width: 100%;
+    }
+
+    .billing-products-grid {
+        padding: 20px;
+
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
+
+        gap: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .billing-page {
+        padding: 20px 15px;
+    }
+
+    .billing-heading h2 {
+        font-size: 23px;
+    }
+
+    .billing-product-card {
+        padding: 15px;
+    }
+
+    .billing-product-icon {
+        width: 44px;
+        height: 44px;
+        margin-bottom: 12px;
+    }
+
+    .billing-product-card h4 {
+        font-size: 14px;
+    }
+
+    .billing-product-price {
+        font-size: 16px;
+    }
+
+    .billing-payment-options {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<div class="billing-page">
+
+    <!-- PAGE HEADING -->
+
+    <div class="billing-heading">
+
+        <h2>Create New Bill</h2>
+
+        <p>
+            Select products, review the cart and complete payment.
+        </p>
+
+    </div>
+
+
+    <!-- POS -->
+
+    <div class="billing-pos-layout">
+
+        <!-- ================= PRODUCTS ================= -->
+
+        <section class="billing-panel">
+
+            <div class="billing-panel-header">
+
+                <div>
+
+                    <h3>Products</h3>
+
+                    <p>
+                        Available products for billing
+                    </p>
+
+                </div>
+
+
+                <div class="billing-product-search">
+
+                    <i class="fas fa-search"></i>
+
+                    <input
+                        type="text"
+                        id="productSearch"
+                        placeholder="Search product..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="billing-products-grid"
+                id="productsGrid"
+            >
+
+                {% for product in products %}
+
+                <article
+                    class="billing-product-card"
+                    data-product-name="{{ product.name|lower }}"
+                    data-product-sku="{{ product.sku|lower }}"
+                >
+
+                    <div class="billing-product-icon">
+
+                        <i class="fas fa-shirt"></i>
+
+                    </div>
+
+
+                    <h4>
+                        {{ product.name }}
+                    </h4>
+
+
+                    <div class="billing-product-sku">
+
+                        SKU: {{ product.sku }}
+
+                    </div>
+
+
+                    <div class="billing-product-price">
+
+                        ₹{{ product.selling_price }}
+
+                    </div>
+
+
+                    <div class="billing-stock">
+
+                        Stock:
+                        <strong>
+                            {{ product.stock_quantity }}
+                        </strong>
+
+                    </div>
+
+
+                    <a
+                        href="{% url 'add_to_cart' product.id %}"
+                        class="billing-add-btn"
+                        data-admin-link
+                    >
+
+                        <i class="fas fa-plus"></i>
+
+                        Add to Cart
+
+                    </a>
+
+                </article>
+
+                {% empty %}
+
+                <div class="billing-empty">
+
+                    <i class="fas fa-box-open"></i>
+
+                    <p>
+                        No products available.
+                    </p>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= CART ================= -->
+
+        <section class="billing-panel billing-cart-panel">
+
+            <div class="billing-panel-header">
+
+                <div>
+
+                    <h3>
+                        Current Bill
+                    </h3>
+
+                    <p>
+                        {{ cart_items|length }}
+                        item{{ cart_items|length|pluralize }}
+                    </p>
+
+                </div>
+
+
+                <i
+                    class="fas fa-shopping-cart"
+                    style="color:#3b82f6;font-size:20px;"
+                ></i>
+
+            </div>
+
+
+            <div class="billing-cart-body">
+
+                <div class="billing-cart-items">
+
+                    {% for item in cart_items %}
+
+                    <div class="billing-cart-item">
+
+                        <div class="billing-cart-item-info">
+
+                            <div class="billing-cart-item-name">
+
+                                {{ item.product.name }}
+
+                            </div>
+
+
+                            <div class="billing-cart-item-meta">
+
+                                ₹{{ item.product.selling_price }}
+                                ×
+                                {{ item.quantity }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="billing-cart-item-total">
+
+                            <strong>
+                                ₹{{ item.total }}
+                            </strong>
+
+
+                            <a
+                                href="{% url 'remove_from_cart' item.product.id %}"
+                                class="billing-remove-btn"
+                                data-admin-link
+                            >
+
+                                <i class="fas fa-trash"></i>
+
+                                Remove
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                    {% empty %}
+
+                    <div class="billing-empty">
+
+                        <i class="fas fa-cart-shopping"></i>
+
+                        <p>
+                            Your cart is empty.
+                        </p>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+            <!-- SUMMARY -->
+
+            <div class="billing-summary">
+
+                <div class="billing-summary-row">
+
+                    <span>Subtotal</span>
+
+                    <strong>
+                        ₹{{ subtotal }}
+                    </strong>
+
+                </div>
+
+
+                <div class="billing-summary-row">
+
+                    <span>Discount</span>
+
+                    <strong>
+                        ₹0.00
+                    </strong>
+
+                </div>
+
+
+                <div class="billing-summary-row">
+
+                    <span>Tax</span>
+
+                    <strong>
+                        ₹0.00
+                    </strong>
+
+                </div>
+
+
+                <div class="billing-summary-row total">
+
+                    <span>Total</span>
+
+                    <span>
+                        ₹{{ subtotal }}
+                    </span>
+
+                </div>
+
+
+                <div class="billing-payment-title">
+
+                    Payment Method
+
+                </div>
+
+
+                <!-- CHANGED: removed data-native-submit="true" -->
+
+                <form
+                    method="post"
+                    action="{% url 'checkout' %}"
+                >
+
+                    {% csrf_token %}
+
+
+                    <div class="billing-payment-options">
+
+                        <div class="billing-payment-option">
+
+                            <input
+                                type="radio"
+                                id="cash"
+                                name="payment_method"
+                                value="cash"
+                                checked
+                            >
+
+                            <label for="cash">
+
+                                <i class="fas fa-money-bill-wave"></i>
+
+                                Cash
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="billing-payment-option">
+
+                            <input
+                                type="radio"
+                                id="card"
+                                name="payment_method"
+                                value="card"
+                            >
+
+                            <label for="card">
+
+                                <i class="fas fa-credit-card"></i>
+
+                                Card
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="billing-payment-option">
+
+                            <input
+                                type="radio"
+                                id="upi"
+                                name="payment_method"
+                                value="upi"
+                            >
+
+                            <label for="upi">
+
+                                <i class="fas fa-mobile-screen-button"></i>
+
+                                UPI
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="billing-checkout-btn"
+                        {% if not cart_items %}disabled{% endif %}
+                    >
+
+                        <i class="fas fa-check-circle"></i>
+
+                        Complete Payment
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+
+<script>
+(function () {
+
+    function initBillingPage() {
+
+        const productSearch =
+            document.getElementById("productSearch");
+
+        const productCards =
+            document.querySelectorAll(
+                ".billing-product-card"
+            );
+
+
+        function filterProducts(value) {
+
+            const query =
+                value.toLowerCase().trim();
+
+
+            productCards.forEach(card => {
+
+                const name =
+                    card.dataset.productName || "";
+
+                const sku =
+                    card.dataset.productSku || "";
+
+
+                const matched =
+                    name.includes(query) ||
+                    sku.includes(query);
+
+
+                card.style.display =
+                    matched ? "" : "none";
+
+            });
+
+        }
+
+
+        if (productSearch) {
+
+            productSearch.addEventListener(
+                "input",
+                function (event) {
+
+                    filterProducts(
+                        event.target.value
+                    );
+
+                }
+            );
+
+        }
+
+
+        document.addEventListener(
+            "keydown",
+            function billingKeyboardShortcut(event) {
+
+                if (
+                    (event.ctrlKey || event.metaKey) &&
+                    event.key.toLowerCase() === "f"
+                ) {
+
+                    const activePage =
+                        document.querySelector(
+                            ".billing-page"
+                        );
+
+                    if (!activePage) return;
+
+                    event.preventDefault();
+
+                    productSearch?.focus();
+
+                }
+
+            }
+        );
+
+    }
+
+
+    initBillingPage();
+
+})();
+</script>
+
+{% endblock %}

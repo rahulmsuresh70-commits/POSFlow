@@ -1,0 +1,304 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+POSFlow | {% if supplier %}Edit Supplier{% else %}Add Supplier{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.content{
+    padding:28px;
+}
+
+.form-wrapper{
+    max-width:900px;
+}
+
+.heading{
+    margin-bottom:22px;
+}
+
+.heading h1{
+    font-size:30px;
+}
+
+.heading p{
+    color:var(--muted);
+    margin-top:5px;
+}
+
+.form-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:25px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.form-group.full{
+    grid-column:1 / -1;
+}
+
+.form-group label{
+    font-weight:600;
+    font-size:14px;
+}
+
+.form-control{
+    width:100%;
+    height:44px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:0 12px;
+    outline:0;
+    font-size:14px;
+    background:#fff;
+}
+
+textarea.form-control{
+    height:120px;
+    padding:12px;
+    resize:vertical;
+}
+
+.form-control:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(26,35,126,.08);
+}
+
+.checkbox-row{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    margin-top:5px;
+}
+
+.checkbox-row input{
+    width:17px;
+    height:17px;
+}
+
+.form-actions{
+    display:flex;
+    gap:10px;
+    margin-top:25px;
+}
+
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    min-height:43px;
+    padding:10px 17px;
+    border:0;
+    border-radius:9px;
+    background:linear-gradient(135deg,var(--primary),var(--primary2));
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.btn-secondary{
+    background:#fff;
+    color:var(--text);
+    border:1px solid var(--border);
+}
+
+.messages{
+    margin-bottom:15px;
+}
+
+.msg{
+    padding:12px 14px;
+    border-radius:9px;
+    background:#ffebee;
+    color:#c62828;
+    font-size:14px;
+    margin-bottom:7px;
+}
+
+@media(max-width:700px){
+    .content{
+        padding:20px 15px;
+    }
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .form-group.full{
+        grid-column:auto;
+    }
+
+    .form-actions{
+        flex-direction:column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="content">
+
+    <div class="form-wrapper">
+
+        <div class="heading">
+            <h1>
+                {% if supplier %}
+                    Edit Supplier
+                {% else %}
+                    Add Supplier
+                {% endif %}
+            </h1>
+
+            <p>
+                {% if supplier %}
+                    Update supplier information.
+                {% else %}
+                    Add a new supplier to POSFlow.
+                {% endif %}
+            </p>
+        </div>
+
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="msg">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="form-card">
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="grid">
+
+                    <div class="form-group">
+                        <label for="name">
+                            Supplier Name *
+                        </label>
+
+                        <input
+                            class="form-control"
+                            type="text"
+                            id="name"
+                            name="name"
+                            value="{% if supplier %}{{ supplier.name }}{% endif %}"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">
+                            Phone *
+                        </label>
+
+                        <input
+                            class="form-control"
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            value="{% if supplier %}{{ supplier.phone }}{% endif %}"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            class="form-control"
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{% if supplier %}{{ supplier.email }}{% endif %}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Account Status
+                        </label>
+
+                        <div class="checkbox-row">
+                            <input
+                                type="checkbox"
+                                id="is_active"
+                                name="is_active"
+                                {% if not supplier or supplier.is_active %}
+                                    checked
+                                {% endif %}
+                            >
+
+                            <label for="is_active">
+                                Active Supplier
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="address">
+                            Address
+                        </label>
+
+                        <textarea
+                            class="form-control"
+                            id="address"
+                            name="address"
+                            placeholder="Enter supplier address..."
+                        >{% if supplier %}{{ supplier.address }}{% endif %}</textarea>
+                    </div>
+
+                </div>
+
+                <div class="form-actions">
+
+                    <button class="btn" type="submit">
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        {% if supplier %}
+                            Update Supplier
+                        {% else %}
+                            Save Supplier
+                        {% endif %}
+                    </button>
+
+                    <a
+                        class="btn btn-secondary"
+                        href="{% url 'supplier_list' %}"
+                        data-admin-link
+                    >
+                        Cancel
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+{% endblock %}

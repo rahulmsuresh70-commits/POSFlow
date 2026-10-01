@@ -1,0 +1,160 @@
+{% extends "admin/base.html" %}
+
+{% block title %}POSFlow | Category{% endblock %}
+
+{% block extra_css %}
+<style>
+.content{padding:32px}
+.heading{margin-bottom:28px}
+.heading h1{font-size:30px;line-height:1.2;font-weight:700}
+.heading p{color:var(--muted);font-size:15px;margin-top:7px}
+.form-card{max-width:900px;background:#fff;border:1px solid var(--border);border-radius:15px;box-shadow:var(--shadow);padding:28px}
+.card-title{display:flex;align-items:center;gap:13px;padding-bottom:19px;margin-bottom:25px;border-bottom:1px solid var(--border)}
+.card-title .icon{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:#e8eaf6;color:var(--primary);font-size:17px}
+.card-title h2{font-size:18px;font-weight:700}
+.card-title p{font-size:13px;color:var(--muted);margin-top:4px}
+.group{margin-bottom:21px}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:8px}
+.input,.textarea{width:100%;border:1px solid var(--border);border-radius:9px;padding:13px;outline:0;font:14px Inter;background:#fff}
+.input{height:48px}
+.textarea{min-height:130px;resize:vertical;line-height:1.55}
+.input:focus,.textarea:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #00bcd41a}
+.check{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:500}
+.check input{accent-color:var(--primary);width:16px;height:16px}
+.image-upload{border:2px dashed #cbd5e1;border-radius:13px;padding:28px 20px;text-align:center;background:#fafbff;cursor:pointer;transition:.2s}
+.image-upload:hover{border-color:var(--cyan);background:#f8fcff}
+.upload-icon{width:58px;height:58px;border-radius:15px;display:grid;place-items:center;margin:0 auto 12px;background:#e8eaf6;color:var(--primary);font-size:21px}
+.image-upload h3{font-size:15px;font-weight:700}
+.image-upload p{font-size:13px;color:var(--muted);margin-top:6px}
+.image-preview{margin-top:18px;width:150px;height:120px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#f5f7fa}
+.image-preview img{width:100%;height:100%;object-fit:cover}
+.current-image{margin-top:17px}
+.current-image-title{font-size:13px;font-weight:700;margin-bottom:9px}
+.current-image img{width:150px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--border)}
+.actions{display:flex;gap:11px;border-top:1px solid var(--border);padding-top:22px;margin-top:25px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 19px;border:0;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none}
+.cancel{background:#fff;color:var(--text);border:1px solid var(--border)}
+.messages{margin-bottom:18px}
+.msg{padding:14px 16px;border-radius:10px;background:#ffebee;color:#c62828;font-size:14px;margin-bottom:8px}
+@media(max-width:700px){.content{padding:24px 18px}.form-card{padding:21px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="content">
+
+<div class="heading">
+    <h1>{% if category %}Edit Category{% else %}Add Category{% endif %}</h1>
+    <p>Manage category information, image and status.</p>
+</div>
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+        <div class="msg">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="form-card">
+
+<div class="card-title">
+    <div class="icon"><i class="fa-solid fa-layer-group"></i></div>
+    <div>
+        <h2>Category Information</h2>
+        <p>Enter category details and upload a category image.</p>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" autocomplete="off">
+    {% csrf_token %}
+
+    <div class="group">
+        <label for="name">Category Name *</label>
+        <input class="input" id="name" type="text" name="name" required autocomplete="off" value="{{ category.name|default:'' }}" placeholder="Enter category name">
+    </div>
+
+    <div class="group">
+        <label for="description">Description</label>
+        <textarea class="textarea" id="description" name="description" placeholder="Enter category description">{{ category.description|default:'' }}</textarea>
+    </div>
+
+    <div class="group">
+        <label>Category Image</label>
+
+        <label class="image-upload" for="category-image">
+            <div class="upload-icon">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h3>Upload Category Image</h3>
+            <p>Click here to choose an image. JPG, JPEG or PNG.</p>
+        </label>
+
+        <input
+            id="category-image"
+            type="file"
+            name="image"
+            accept="image/jpeg,image/png,image/webp"
+            style="display:none"
+        >
+
+        <div id="image-preview" class="image-preview" style="display:none;">
+            <img id="preview-image" alt="Category preview">
+        </div>
+
+        {% if category and category.image %}
+        <div class="current-image">
+            <div class="current-image-title">Current Image</div>
+            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+        </div>
+        {% endif %}
+    </div>
+
+    <label class="check">
+        <input type="checkbox" name="is_active" {% if not category or category.is_active %}checked{% endif %}>
+        Category is active
+    </label>
+
+    <div class="actions">
+        <a href="{% url 'category_list' %}" class="btn cancel" data-admin-link>
+            Cancel
+        </a>
+
+        <button class="btn" type="submit">
+            <i class="fa-solid fa-check"></i>
+            {% if category %}Update Category{% else %}Save Category{% endif %}
+        </button>
+    </div>
+</form>
+
+</div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const categoryImageInput = document.getElementById("category-image");
+const previewBox = document.getElementById("image-preview");
+const previewImage = document.getElementById("preview-image");
+
+if(categoryImageInput){
+    categoryImageInput.addEventListener("change", function(){
+        const file = this.files[0];
+
+        if(!file){
+            previewBox.style.display = "none";
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(event){
+            previewImage.src = event.target.result;
+            previewBox.style.display = "block";
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,860 @@
+{% extends "admin/base.html" %}
+
+{% block title %}POSFlow | Products{% endblock %}
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   PRODUCTS PAGE
+   All CSS is scoped to .products-page
+   to prevent conflicts with other AJAX-loaded pages.
+========================================================= */
+
+.products-page {
+    padding: 28px;
+    width: 100%;
+    min-width: 0;
+}
+
+.products-page *,
+.products-page *::before,
+.products-page *::after {
+    box-sizing: border-box;
+}
+
+
+/* ================= HEADING ================= */
+
+.products-page .products-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.products-page .products-heading h1 {
+    font-size: 26px;
+    line-height: 1.2;
+    margin: 0;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.products-page .products-heading p {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 5px 0 0;
+}
+
+
+/* ================= BUTTON ================= */
+
+.products-page .products-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    padding: 11px 15px;
+
+    border: 0;
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--primary),
+            var(--primary2)
+        );
+
+    color: #fff;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+    text-decoration: none;
+
+    transition: .2s ease;
+    white-space: nowrap;
+}
+
+.products-page .products-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 18px rgba(37, 99, 235, .18);
+}
+
+
+/* ================= FILTERS ================= */
+
+.products-page .products-filters {
+    background: #fff;
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+
+    padding: 16px;
+
+    box-shadow: var(--shadow);
+
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+
+    gap: 10px;
+
+    margin-bottom: 18px;
+
+    width: 100%;
+}
+
+.products-page .products-field {
+    width: 100%;
+    height: 42px;
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    padding: 0 12px;
+
+    outline: none;
+
+    background: #fff;
+
+    color: var(--text);
+
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+
+    transition: .2s ease;
+}
+
+.products-page .products-field:focus {
+    border-color: var(--primary);
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, .08);
+}
+
+
+/* ================= TABLE CARD ================= */
+
+.products-page .products-table-card {
+    background: #fff;
+
+    border: 1px solid var(--border);
+    border-radius: 13px;
+
+    box-shadow: var(--shadow);
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    width: 100%;
+}
+
+.products-page .products-table {
+    width: 100%;
+    min-width: 980px;
+
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.products-page .products-table th {
+    background: #fafbfe;
+
+    color: var(--muted);
+
+    font-size: 10px;
+
+    text-transform: uppercase;
+
+    text-align: left;
+
+    padding: 14px 16px;
+
+    white-space: nowrap;
+
+    font-weight: 600;
+}
+
+.products-page .products-table td {
+    padding: 14px 16px;
+
+    border-top: 1px solid #f0f2f5;
+
+    font-size: 12px;
+
+    vertical-align: middle;
+
+    color: var(--text);
+}
+
+
+/* ================= PRODUCT CELL ================= */
+
+.products-page .products-product-cell {
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    min-width: 210px;
+}
+
+
+/* =========================================================
+   PRODUCT IMAGE
+   Strong fixed dimensions to prevent huge images.
+========================================================= */
+
+.products-page .products-product-image {
+    width: 48px !important;
+    min-width: 48px !important;
+    max-width: 48px !important;
+
+    height: 48px !important;
+    min-height: 48px !important;
+    max-height: 48px !important;
+
+    border-radius: 9px;
+
+    border: 1px solid var(--border);
+
+    background: #f5f7fb;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    flex: 0 0 48px;
+
+    position: relative;
+}
+
+.products-page .products-product-image img {
+    display: block !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+
+    max-width: 100% !important;
+    max-height: 100% !important;
+
+    object-fit: contain !important;
+
+    object-position: center;
+
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.products-page .products-product-image i {
+    color: #8a94a6;
+
+    font-size: 18px;
+
+    flex-shrink: 0;
+}
+
+
+/* ================= PRODUCT TEXT ================= */
+
+.products-page .products-product-info {
+    min-width: 0;
+}
+
+.products-page .products-product-name {
+    font-weight: 600;
+
+    color: var(--text);
+
+    line-height: 1.35;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    max-width: 220px;
+}
+
+.products-page .products-sku {
+    color: var(--muted);
+
+    font-size: 10px;
+
+    margin-top: 3px;
+}
+
+
+/* ================= BADGES ================= */
+
+.products-page .products-badge {
+    display: inline-block;
+
+    padding: 5px 8px;
+
+    border-radius: 20px;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+}
+
+.products-page .products-badge-active {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.products-page .products-badge-inactive {
+    background: #ffebee;
+    color: #c62828;
+}
+
+
+/* ================= STOCK ================= */
+
+.products-page .products-low-stock {
+    color: #ef6c00;
+    font-weight: 700;
+}
+
+
+/* ================= ACTIONS ================= */
+
+.products-page .products-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+}
+
+.products-page .products-action-form {
+    margin: 0;
+    padding: 0;
+}
+
+.products-page .products-action {
+    width: 32px;
+    height: 32px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 7px;
+
+    background: #fff;
+
+    display: grid;
+    place-items: center;
+
+    cursor: pointer;
+
+    text-decoration: none;
+
+    transition: .2s ease;
+}
+
+.products-page .products-action:hover {
+    transform: translateY(-1px);
+}
+
+.products-page .products-action-edit {
+    color: var(--primary);
+}
+
+.products-page .products-action-delete {
+    color: #f44336;
+}
+
+.products-page .products-action-delete:hover {
+    background: #fff5f5;
+    border-color: #ffcdd2;
+}
+
+
+/* ================= MESSAGES ================= */
+
+.products-page .products-messages {
+    margin-bottom: 15px;
+}
+
+.products-page .products-message {
+    padding: 12px 14px;
+
+    border-radius: 9px;
+
+    background: #e8f5e9;
+
+    color: #2e7d32;
+
+    font-size: 12px;
+
+    margin-bottom: 6px;
+}
+
+
+/* ================= EMPTY ================= */
+
+.products-page .products-empty {
+    text-align: center;
+
+    padding: 40px;
+
+    color: #78909c;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1000px) {
+
+    .products-page .products-filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+}
+
+@media (max-width: 850px) {
+
+    .products-page {
+        padding: 20px 15px;
+    }
+
+    .products-page .products-heading {
+        align-items: flex-start;
+    }
+
+    .products-page .products-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .products-page .products-table-card {
+        overflow-x: auto;
+    }
+
+    .products-page .products-product-image {
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
+
+        flex-basis: 42px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .products-page .products-heading {
+        flex-direction: column;
+    }
+
+    .products-page .products-heading > div {
+        width: 100%;
+    }
+
+    .products-page .products-btn {
+        width: 100%;
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+<section class="products-page">
+
+    <!-- ================= HEADING ================= -->
+
+    <div class="products-heading">
+
+        <div>
+
+            <h1>Products</h1>
+
+            <p>
+                Manage products, prices and inventory.
+            </p>
+
+        </div>
+
+        <a
+            class="products-btn"
+            href="{% url 'product_create' %}"
+            data-admin-link
+        >
+
+            <i class="fa-solid fa-plus"></i>
+
+            Add Product
+
+        </a>
+
+    </div>
+
+
+    <!-- ================= MESSAGES ================= -->
+
+    {% if messages %}
+
+    <div class="products-messages">
+
+        {% for message in messages %}
+
+        <div class="products-message">
+
+            <i class="fa-solid fa-circle-check"></i>
+
+            {{ message }}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================= FILTERS ================= -->
+
+    <form
+        class="products-filters"
+        method="get"
+    >
+
+        <input
+            class="products-field"
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search product name or SKU..."
+        >
+
+
+        <select
+            class="products-field"
+            name="category"
+        >
+
+            <option value="">
+                All Categories
+            </option>
+
+            {% for category in categories %}
+
+            <option
+                value="{{ category.id }}"
+                {% if selected_category == category.id|stringformat:"s" %}
+                    selected
+                {% endif %}
+            >
+
+                {{ category.name }}
+
+            </option>
+
+            {% endfor %}
+
+        </select>
+
+
+        <select
+            class="products-field"
+            name="status"
+        >
+
+            <option value="">
+                All Status
+            </option>
+
+            <option
+                value="active"
+                {% if selected_status == "active" %}
+                    selected
+                {% endif %}
+            >
+
+                Active
+
+            </option>
+
+            <option
+                value="inactive"
+                {% if selected_status == "inactive" %}
+                    selected
+                {% endif %}
+            >
+
+                Inactive
+
+            </option>
+
+            <option
+                value="low_stock"
+                {% if selected_status == "low_stock" %}
+                    selected
+                {% endif %}
+            >
+
+                Low Stock
+
+            </option>
+
+        </select>
+
+
+        <button
+            class="products-btn"
+            type="submit"
+        >
+
+            <i class="fa-solid fa-filter"></i>
+
+            Filter
+
+        </button>
+
+    </form>
+
+
+    <!-- ================= TABLE ================= -->
+
+    <div class="products-table-card">
+
+        <table class="products-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Product</th>
+
+                    <th>Category</th>
+
+                    <th>Purchase Price</th>
+
+                    <th>Selling Price</th>
+
+                    <th>Stock</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for product in products %}
+
+                <tr>
+
+                    <!-- PRODUCT -->
+
+                    <td>
+
+                        <div class="products-product-cell">
+
+                            <div class="products-product-image">
+
+                                {% with image=product.images.first %}
+
+                                    {% if image and image.image %}
+
+                                        <img
+                                            src="{{ image.image.url }}"
+                                            alt="{{ product.name }}"
+                                        >
+
+                                    {% else %}
+
+                                        <i class="fa-solid fa-box-open"></i>
+
+                                    {% endif %}
+
+                                {% endwith %}
+
+                            </div>
+
+
+                            <div class="products-product-info">
+
+                                <div class="products-product-name">
+
+                                    {{ product.name }}
+
+                                </div>
+
+                                <div class="products-sku">
+
+                                    SKU: {{ product.sku }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+
+                    <!-- CATEGORY -->
+
+                    <td>
+
+                        {{ product.category.name }}
+
+                    </td>
+
+
+                    <!-- PURCHASE PRICE -->
+
+                    <td>
+
+                        ₹{{ product.purchase_price|floatformat:2 }}
+
+                    </td>
+
+
+                    <!-- SELLING PRICE -->
+
+                    <td>
+
+                        <strong>
+                            ₹{{ product.selling_price|floatformat:2 }}
+                        </strong>
+
+                    </td>
+
+
+                    <!-- STOCK -->
+
+                    <td
+                        class="{% if product.stock_quantity <= 5 %}products-low-stock{% endif %}"
+                    >
+
+                        {{ product.stock_quantity }}
+
+                    </td>
+
+
+                    <!-- STATUS -->
+
+                    <td>
+
+                        {% if product.is_active %}
+
+                            <span class="products-badge products-badge-active">
+                                Active
+                            </span>
+
+                        {% else %}
+
+                            <span class="products-badge products-badge-inactive">
+                                Inactive
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+
+                    <!-- ACTIONS -->
+
+                    <td>
+
+                        <div class="products-actions">
+
+                            <a
+                                class="products-action products-action-edit"
+                                href="{% url 'product_edit' product.id %}"
+                                data-admin-link
+                                title="Edit"
+                            >
+
+                                <i class="fa-solid fa-pen"></i>
+
+                            </a>
+
+
+                            <form
+                                method="post"
+                                action="{% url 'product_delete' product.id %}"
+                                class="products-action-form"
+                                data-native-submit="true"
+                                onsubmit="return confirm('Delete this product?');"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="products-action products-action-delete"
+                                    title="Delete"
+                                >
+
+                                    <i class="fa-solid fa-trash"></i>
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="products-empty"
+                    >
+
+                        No products found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

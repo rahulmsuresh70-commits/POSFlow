@@ -1,0 +1,510 @@
+{% extends "admin/base.html" %}
+{% block title %}POSFlow | Product Form{% endblock %}
+{% block extra_css %}
+<style>
+.content{padding:28px}.heading{margin-bottom:22px}.heading h1{font-size:26px}.heading p{color:var(--muted);font-size:13px;margin-top:4px}.messages{margin-bottom:15px}.msg{padding:12px;background:#ffebee;color:#c62828;border-radius:8px;font-size:12px;margin-bottom:7px}.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.8fr);gap:20px;align-items:start}.card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:24px}.card+.card{margin-top:18px}.card-title{display:flex;align-items:center;gap:10px;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--border)}.card-title .icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#e8eaf6;color:var(--primary)}.card-title h2{font-size:15px}.card-title p{font-size:10px;color:var(--muted);margin-top:3px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.group{margin-bottom:2px}.group.full{grid-column:1/-1}.group label{display:block;font-size:11px;font-weight:600;margin-bottom:7px}.input,.select{width:100%;height:44px;border:1px solid var(--border);border-radius:8px;padding:0 12px;outline:0;font:13px Inter;background:#fff}.input:focus,.select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #00bcd41a}.image-upload{display:block;border:2px dashed #cfd5e8;border-radius:13px;padding:25px 18px;text-align:center;background:#fafbff;cursor:pointer}.upload-icon{width:55px;height:55px;border-radius:15px;display:grid;place-items:center;margin:0 auto 12px;background:#e8eaf6;color:var(--primary);font-size:21px}.image-upload h3{font-size:14px}.image-upload p{font-size:11px;color:var(--muted);margin-top:6px}.image-upload strong{color:var(--primary)}.image-upload input{display:none}.preview-grid,.existing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:15px}.preview,.existing{position:relative;height:130px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#f8f9fc}.preview img,.existing img{width:100%;height:100%;object-fit:cover}.remove-preview,.delete-image{position:absolute;right:6px;top:6px;width:30px;height:30px;border:0;border-radius:7px;background:#fff;color:#f44336;cursor:pointer;box-shadow:0 3px 10px #0002}.existing-title{font-size:11px;font-weight:700;margin:20px 0 10px;color:#455a64}.check{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:8px}.check input{accent-color:var(--primary)}.summary-row{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f0f2f5;font-size:12px}.summary-row span{color:var(--muted)}.info-box{margin-top:16px;padding:13px;border-radius:9px;background:#f1f5ff;color:#53627a;font-size:10px;line-height:1.6}.actions{display:flex;gap:10px;border-top:1px solid var(--border);padding-top:20px;margin-top:22px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 17px;border:0;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:12px;font-weight:600;cursor:pointer}.cancel{background:#fff;color:var(--text);border:1px solid var(--border)}@media(max-width:950px){.layout{grid-template-columns:1fr}}@media(max-width:600px){.grid{grid-template-columns:1fr}.group.full{grid-column:auto}.preview-grid,.existing-grid{grid-template-columns:repeat(2,1fr)}.content{padding:20px 15px}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="content">
+
+<div class="heading">
+    <h1>
+        {% if product %}
+            Edit Product
+        {% else %}
+            Add Product
+        {% endif %}
+    </h1>
+    <p>Manage product information, pricing, stock and images.</p>
+</div>
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+        <div class="msg">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+
+{% csrf_token %}
+
+<div class="layout">
+
+<!-- =====================================================
+     LEFT SIDE
+====================================================== -->
+
+<div>
+
+<div class="card">
+
+<div class="card-title">
+    <div class="icon">
+        <i class="fa-solid fa-box"></i>
+    </div>
+    <div>
+        <h2>Product Information</h2>
+        <p>Basic product details</p>
+    </div>
+</div>
+
+<div class="grid">
+
+<div class="group">
+    <label>Product Name *</label>
+    <input
+        class="input"
+        type="text"
+        name="name"
+        required
+        value="{{ product.name|default:'' }}"
+        placeholder="Enter product name"
+    >
+</div>
+
+<div class="group">
+    <label>SKU *</label>
+    <input
+        class="input"
+        type="text"
+        name="sku"
+        required
+        value="{{ product.sku|default:'' }}"
+        placeholder="Enter unique SKU"
+    >
+</div>
+
+<div class="group">
+    <label>Category *</label>
+
+    <select class="select" name="category" required>
+
+        <option value="">
+            Select category
+        </option>
+
+        {% for category in categories %}
+
+        <option
+            value="{{ category.id }}"
+            {% if product and product.category_id == category.id %}
+                selected
+            {% endif %}
+        >
+            {{ category.name }}
+        </option>
+
+        {% endfor %}
+
+    </select>
+</div>
+
+<div class="group">
+    <label>Stock Quantity *</label>
+
+    <input
+        class="input"
+        type="number"
+        min="0"
+        name="stock_quantity"
+        required
+        value="{{ product.stock_quantity|default:0 }}"
+    >
+</div>
+
+</div>
+
+</div>
+
+
+<!-- PRICING -->
+
+<div class="card">
+
+<div class="card-title">
+    <div class="icon">
+        <i class="fa-solid fa-indian-rupee-sign"></i>
+    </div>
+
+    <div>
+        <h2>Pricing</h2>
+        <p>Purchase and selling prices</p>
+    </div>
+</div>
+
+<div class="grid">
+
+<div class="group">
+    <label>Purchase Price *</label>
+
+    <input
+        class="input"
+        type="number"
+        min="0"
+        step="0.01"
+        name="purchase_price"
+        required
+        value="{{ product.purchase_price|default:0 }}"
+    >
+</div>
+
+<div class="group">
+    <label>Selling Price *</label>
+
+    <input
+        class="input"
+        type="number"
+        min="0"
+        step="0.01"
+        name="selling_price"
+        required
+        value="{{ product.selling_price|default:0 }}"
+    >
+</div>
+
+</div>
+
+<label class="check">
+    <input
+        type="checkbox"
+        name="is_active"
+        {% if not product or product.is_active %}
+            checked
+        {% endif %}
+    >
+    Product is active
+</label>
+
+</div>
+
+
+<!-- =====================================================
+     PRODUCT IMAGES
+====================================================== -->
+
+<div class="card">
+
+<div class="card-title">
+    <div class="icon">
+        <i class="fa-solid fa-images"></i>
+    </div>
+
+    <div>
+        <h2>Product Images</h2>
+        <p>Upload multiple product images</p>
+    </div>
+</div>
+
+<label class="image-upload" id="uploadArea">
+
+    <div class="upload-icon">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+    </div>
+
+    <h3>
+        Click to upload product images
+    </h3>
+
+    <p>
+        or drag and drop your images here
+    </p>
+
+    <p style="margin-top:8px;">
+        <strong>PNG, JPG, JPEG, WEBP</strong>
+        · Multiple images supported
+    </p>
+
+    <input
+        type="file"
+        name="images"
+        id="imageInput"
+        accept="image/png,image/jpeg,image/jpg,image/webp"
+        multiple
+    >
+
+</label>
+
+
+<!-- NEW IMAGE PREVIEW -->
+
+<div
+    class="preview-grid"
+    id="previewGrid"
+>
+</div>
+
+
+<!-- EXISTING IMAGES -->
+
+{% if existing_images %}
+
+<div class="existing-title">
+    Existing Product Images
+</div>
+
+<div class="existing-grid">
+
+{% for image in existing_images %}
+
+<div class="existing">
+
+    <img
+        src="{{ image.image.url }}"
+        alt="{{ product.name }}"
+    >
+
+    <button
+        type="submit"
+        class="delete-image"
+        formaction="{% url 'product_image_delete' image.id %}"
+        formmethod="post"
+        formnovalidate
+        onclick="return confirm('Remove this image?');"
+        title="Remove image"
+    >
+        <i class="fa-solid fa-trash"></i>
+    </button>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     RIGHT SIDE
+====================================================== -->
+
+<div>
+
+<div class="card">
+
+<div class="card-title">
+    <div class="icon">
+        <i class="fa-solid fa-circle-info"></i>
+    </div>
+
+    <div>
+        <h2>Product Summary</h2>
+        <p>Quick information</p>
+    </div>
+</div>
+
+<div class="summary-row">
+    <span>Status</span>
+    <strong id="statusText">
+        {% if not product or product.is_active %}
+            Active
+        {% else %}
+            Inactive
+        {% endif %}
+    </strong>
+</div>
+
+<div class="summary-row">
+    <span>Stock</span>
+    <strong id="stockText">
+        {{ product.stock_quantity|default:0 }}
+    </strong>
+</div>
+
+<div class="summary-row">
+    <span>Selling Price</span>
+    <strong id="priceText">
+        ₹{{ product.selling_price|default:0 }}
+    </strong>
+</div>
+
+<div class="info-box">
+    <i class="fa-solid fa-lightbulb"></i>
+    Upload clear product images with a suitable background.
+    Multiple images can be selected at once.
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<a data-admin-link
+    href="{% url 'product_list' %}"
+    class="btn cancel"
+>
+    Cancel
+</a>
+
+<button
+    class="btn"
+    type="submit"
+>
+    <i class="fa-solid fa-check"></i>
+
+    {% if product %}
+        Update Product
+    {% else %}
+        Save Product
+    {% endif %}
+
+</button>
+
+</div>
+
+</form>
+
+</section>
+{% endblock %}
+{% block extra_js %}
+<script>
+const imageInput = document.getElementById("imageInput");
+const previewGrid = document.getElementById("previewGrid");
+const uploadArea = document.getElementById("uploadArea");
+
+let selectedFiles = [];
+
+imageInput.addEventListener("change", function () {
+    selectedFiles = Array.from(this.files);
+    renderPreviews();
+});
+
+
+function renderPreviews() {
+
+    previewGrid.innerHTML = "";
+
+    selectedFiles.forEach((file, index) => {
+
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+
+            const preview = document.createElement("div");
+
+            preview.className = "preview";
+
+            preview.innerHTML = `
+                <img src="${event.target.result}" alt="Preview">
+
+                <button
+                    type="button"
+                    class="remove-preview"
+                    title="Remove"
+                    onclick="removePreview(${index})"
+                >
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            `;
+
+            previewGrid.appendChild(preview);
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+
+function removePreview(index) {
+
+    selectedFiles.splice(index, 1);
+
+    const dataTransfer = new DataTransfer();
+
+    selectedFiles.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+
+    imageInput.files = dataTransfer.files;
+
+    renderPreviews();
+}
+
+
+["dragenter", "dragover"].forEach(eventName => {
+
+    uploadArea.addEventListener(eventName, function (event) {
+
+        event.preventDefault();
+
+        uploadArea.classList.add("drag");
+
+    });
+
+});
+
+
+["dragleave", "drop"].forEach(eventName => {
+
+    uploadArea.addEventListener(eventName, function (event) {
+
+        event.preventDefault();
+
+        uploadArea.classList.remove("drag");
+
+    });
+
+});
+
+
+uploadArea.addEventListener("drop", function (event) {
+
+    const files = Array.from(event.dataTransfer.files)
+        .filter(file => file.type.startsWith("image/"));
+
+    selectedFiles = files;
+
+    const dataTransfer = new DataTransfer();
+
+    selectedFiles.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+
+    imageInput.files = dataTransfer.files;
+
+    renderPreviews();
+
+});
+
+
+document.querySelector('input[name="stock_quantity"]')
+.addEventListener("input", function () {
+
+    document.getElementById("stockText").textContent =
+        this.value || "0";
+
+});
+
+
+document.querySelector('input[name="selling_price"]')
+.addEventListener("input", function () {
+
+    document.getElementById("priceText").textContent =
+        "₹" + (this.value || "0");
+
+});
+
+
+document.querySelector('input[name="is_active"]')
+.addEventListener("change", function () {
+
+    document.getElementById("statusText").textContent =
+        this.checked ? "Active" : "Inactive";
+
+});
+</script>
+{% endblock %}

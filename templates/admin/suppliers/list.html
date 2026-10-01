@@ -1,0 +1,379 @@
+{% extends "admin/base.html" %}
+
+{% block title %}POSFlow | Suppliers{% endblock %}
+
+{% block extra_css %}
+<style>
+.content{
+    padding:28px;
+}
+
+.heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:22px;
+}
+
+.heading h1{
+    font-size:30px;
+}
+
+.heading p{
+    color:var(--muted);
+    margin-top:5px;
+}
+
+.btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 16px;
+    border:0;
+    border-radius:9px;
+    background:linear-gradient(135deg,var(--primary),var(--primary2));
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.filters{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:13px;
+    padding:16px;
+    box-shadow:var(--shadow);
+    display:grid;
+    grid-template-columns:2fr 1fr auto;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.field{
+    height:42px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:0 12px;
+    outline:0;
+    background:#fff;
+    font-size:14px;
+}
+
+.table-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:13px;
+    box-shadow:var(--shadow);
+    overflow:auto;
+}
+
+.table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:950px;
+}
+
+.table th{
+    background:#fafbfe;
+    color:var(--muted);
+    font-size:13px;
+    text-transform:uppercase;
+    text-align:left;
+    padding:15px 16px;
+}
+
+.table td{
+    padding:15px 16px;
+    border-top:1px solid #f0f2f5;
+    font-size:14px;
+}
+
+.supplier-name{
+    font-weight:700;
+}
+
+.email{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:3px;
+}
+
+.address{
+    max-width:250px;
+    color:#546e7a;
+}
+
+.badge{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+}
+
+.active{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.inactive{
+    background:#ffebee;
+    color:#c62828;
+}
+
+.actions{
+    display:flex;
+    gap:7px;
+}
+
+.action{
+    width:34px;
+    height:34px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+}
+
+.edit{
+    color:var(--primary);
+}
+
+.toggle{
+    color:#ef6c00;
+}
+
+.delete{
+    color:#f44336;
+}
+
+.messages{
+    margin-bottom:15px;
+}
+
+.msg{
+    padding:12px 14px;
+    border-radius:9px;
+    background:#e8f5e9;
+    color:#2e7d32;
+    font-size:14px;
+    margin-bottom:6px;
+}
+
+@media(max-width:850px){
+    .filters{
+        grid-template-columns:1fr;
+    }
+
+    .content{
+        padding:20px 15px;
+    }
+
+    .heading{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="content">
+
+    <div class="heading">
+        <div>
+            <h1>Suppliers</h1>
+            <p>Manage supplier information and status.</p>
+        </div>
+
+        <a
+            class="btn"
+            href="{% url 'supplier_create' %}"
+            data-admin-link
+        >
+            <i class="fa-solid fa-truck"></i>
+            Add Supplier
+        </a>
+    </div>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="msg">
+                    <i class="fa-solid fa-circle-check"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form class="filters" method="get">
+
+        <input
+            class="field"
+            type="text"
+            name="search"
+            value="{{ search }}"
+            placeholder="Search supplier, phone or email..."
+        >
+
+        <select class="field" name="status">
+            <option value="">All Status</option>
+
+            <option
+                value="active"
+                {% if selected_status == "active" %}selected{% endif %}
+            >
+                Active
+            </option>
+
+            <option
+                value="inactive"
+                {% if selected_status == "inactive" %}selected{% endif %}
+            >
+                Inactive
+            </option>
+        </select>
+
+        <button class="btn" type="submit">
+            <i class="fa-solid fa-filter"></i>
+            Filter
+        </button>
+
+    </form>
+
+    <div class="table-card">
+
+        <table class="table">
+
+            <thead>
+                <tr>
+                    <th>Supplier</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for supplier in suppliers %}
+
+                    <tr>
+
+                        <td>
+                            <div class="supplier-name">
+                                {{ supplier.name }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {{ supplier.phone }}
+                        </td>
+
+                        <td>
+                            {{ supplier.email|default:"-" }}
+                        </td>
+
+                        <td>
+                            <div class="address">
+                                {{ supplier.address|default:"-" }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if supplier.is_active %}
+                                <span class="badge active">
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="badge inactive">
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+
+                            <div class="actions">
+
+                                <a
+                                    class="action edit"
+                                    href="{% url 'supplier_edit' supplier.id %}"
+                                    data-admin-link
+                                    title="Edit"
+                                >
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+
+                                <form
+                                    method="post"
+                                    action="{% url 'supplier_toggle_status' supplier.id %}"
+                                    data-native-submit="true"
+                                    onsubmit="return confirm('{% if supplier.is_active %}Deactivate{% else %}Activate{% endif %} this supplier?');"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        class="action toggle"
+                                        type="submit"
+                                        title="{% if supplier.is_active %}Deactivate{% else %}Activate{% endif %}"
+                                    >
+                                        {% if supplier.is_active %}
+                                            <i class="fa-solid fa-ban"></i>
+                                        {% else %}
+                                            <i class="fa-solid fa-circle-check"></i>
+                                        {% endif %}
+                                    </button>
+                                </form>
+
+                                <form
+                                    method="post"
+                                    action="{% url 'supplier_delete' supplier.id %}"
+                                    data-native-submit="true"
+                                    onsubmit="return confirm('Delete this supplier?');"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        class="action delete"
+                                        type="submit"
+                                        title="Delete"
+                                    >
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+                        <td
+                            colspan="6"
+                            style="text-align:center;padding:45px;color:#78909c;"
+                        >
+                            No suppliers found.
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+{% endblock %}

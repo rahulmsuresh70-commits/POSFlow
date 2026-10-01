@@ -1,0 +1,838 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Returns | POSFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================================================
+   RETURNS PAGE
+========================================================= */
+
+.returns-page {
+    padding: 35px;
+    min-height: calc(100vh - 70px);
+    background: #f8fafc;
+    font-family: 'Inter', sans-serif;
+}
+
+.returns-page *,
+.returns-page *::before,
+.returns-page *::after {
+    box-sizing: border-box;
+}
+
+.returns-page h1,
+.returns-page h2,
+.returns-page h3 {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ================= HEADER ================= */
+
+.returns-header {
+    margin-bottom: 28px;
+}
+
+.returns-header h2 {
+    margin: 0 0 7px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.returns-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ================= SEARCH ================= */
+
+.return-search-card {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,.06);
+}
+
+.return-search-form {
+    display: flex;
+    align-items: end;
+    gap: 14px;
+}
+
+.return-search-field {
+    flex: 1;
+}
+
+.return-search-field label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.return-search-field input {
+    width: 100%;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: .25s ease;
+}
+
+.return-search-field input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.10);
+}
+
+.return-btn {
+    height: 44px;
+    border: 0;
+    border-radius: 10px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: .25s ease;
+}
+
+.return-btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    box-shadow: 0 5px 12px rgba(37,99,235,.20);
+}
+
+.return-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(37,99,235,.25);
+}
+
+.return-btn-light {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+.return-btn-light:hover {
+    background: #e2e8f0;
+}
+
+/* ================= ERROR ================= */
+
+.return-error {
+    margin-top: 15px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 13px;
+}
+
+/* ================= INVOICE CARD ================= */
+
+.return-invoice-card {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,.06);
+}
+
+.return-invoice-header {
+    padding: 22px 25px;
+    border-bottom: 1px solid #eef2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.return-invoice-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.return-invoice-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: #eff6ff;
+    color: #2563eb;
+    display: grid;
+    place-items: center;
+}
+
+.return-invoice-title h3 {
+    margin: 0 0 4px;
+    font-size: 17px;
+    color: #0f172a;
+}
+
+.return-invoice-title p {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.invoice-number {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+/* ================= ITEMS TABLE ================= */
+
+.return-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.return-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.return-table th {
+    padding: 14px 20px;
+    background: #f8fafc;
+    color: #64748b;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+
+.return-table td {
+    padding: 17px 20px;
+    border-top: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.return-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+/* ================= PRODUCT ================= */
+
+.product-name {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.product-name strong {
+    color: #0f172a;
+    font-size: 14px;
+}
+
+.product-name span {
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.quantity-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ================= RETURN FORM ================= */
+
+.return-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.return-quantity {
+    width: 80px;
+    height: 38px;
+    padding: 0 9px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+}
+
+.return-quantity:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.return-reason {
+    width: 150px;
+    height: 38px;
+    padding: 0 9px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+}
+
+.return-reason:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.process-return-btn {
+    height: 38px;
+    border: 0;
+    border-radius: 8px;
+    padding: 0 13px;
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: .25s ease;
+}
+
+.process-return-btn:hover {
+    transform: translateY(-1px);
+}
+
+/* ================= EMPTY / INITIAL ================= */
+
+.return-empty {
+    text-align: center;
+    padding: 65px 25px;
+}
+
+.return-empty-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    background: #eff6ff;
+    color: #3b82f6;
+    display: grid;
+    place-items: center;
+    font-size: 28px;
+}
+
+.return-empty h3 {
+    margin: 0 0 7px;
+    color: #0f172a;
+    font-size: 18px;
+}
+
+.return-empty p {
+    margin: 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+/* ================= RETURN HISTORY ================= */
+
+.return-history-card {
+    background: #fff;
+    border: 1px solid #eef2f7;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,.06);
+}
+
+.return-history-header {
+    padding: 22px 25px;
+    border-bottom: 1px solid #eef2f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.return-history-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #0f172a;
+}
+
+.return-count {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.history-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+}
+
+.history-table th {
+    padding: 14px 20px;
+    background: #f8fafc;
+    color: #64748b;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.history-table td {
+    padding: 16px 20px;
+    border-top: 1px solid #f1f5f9;
+    color: #334155;
+    font-size: 14px;
+}
+
+.refund-amount {
+    font-weight: 700;
+    color: #047857;
+}
+
+.return-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #047857;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 700px) {
+
+    .returns-page {
+        padding: 20px 15px;
+    }
+
+    .returns-header h2 {
+        font-size: 24px;
+    }
+
+    .return-search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .return-search-form .return-btn {
+        width: 100%;
+    }
+
+    .return-invoice-header,
+    .return-history-header {
+        padding: 18px;
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="returns-page">
+
+    <!-- ================= PAGE HEADER ================= -->
+
+    <div class="returns-header">
+        <h2>Product Returns</h2>
+        <p>
+            Search a completed invoice and process product returns.
+        </p>
+    </div>
+
+
+    <!-- ================= INVOICE SEARCH ================= -->
+
+    <div class="return-search-card">
+
+        <form
+            method="GET"
+            action="{% url 'returns_page' %}"
+            class="return-search-form"
+        >
+
+            <div class="return-search-field">
+
+                <label for="invoice">
+                    Invoice Number
+                </label>
+
+                <input
+                    type="text"
+                    id="invoice"
+                    name="invoice"
+                    value="{{ invoice_number }}"
+                    placeholder="Example: INV-00007"
+                    autocomplete="off"
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="return-btn return-btn-primary"
+            >
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Search Invoice
+            </button>
+
+            <a
+                href="{% url 'returns_page' %}"
+                class="return-btn return-btn-light"
+                data-admin-link
+                data-page="returns"
+            >
+                <i class="fa-solid fa-rotate-left"></i>
+                Reset
+            </a>
+
+        </form>
+
+
+        {% if error %}
+
+            <div class="return-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                {{ error }}
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ================= INVOICE ITEMS ================= -->
+
+    {% if sale %}
+
+    <div class="return-invoice-card">
+
+        <div class="return-invoice-header">
+
+            <div class="return-invoice-title">
+
+                <div class="return-invoice-icon">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+
+                <div>
+                    <h3>
+                        Invoice
+                        <span class="invoice-number">
+                            {{ sale.invoice_number }}
+                        </span>
+                    </h3>
+
+                    <p>
+                        Staff:
+                        {{ sale.staff.username }}
+                        &nbsp; • &nbsp;
+                        {{ sale.created_at|date:"d M Y, h:i A" }}
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="return-table-wrapper">
+
+            <table class="return-table">
+
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Sold Qty</th>
+                        <th>Unit Price</th>
+                        <th>Return Qty</th>
+                        <th>Reason</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in sale.items.all %}
+
+                    <tr>
+
+                        <td>
+                            <div class="product-name">
+
+                                <strong>
+                                    {{ item.product.name }}
+                                </strong>
+
+                                <span>
+                                    SKU: {{ item.product.sku }}
+                                </span>
+
+                            </div>
+                        </td>
+
+
+                        <td>
+                            <span class="quantity-badge">
+                                {{ item.quantity }}
+                            </span>
+                        </td>
+
+
+                        <td>
+                            ₹{{ item.price|floatformat:2 }}
+                        </td>
+
+
+                        <td>
+
+                            <form
+                                method="POST"
+                                action="{% url 'process_return' %}"
+                                class="return-form"
+                                data-native-submit="true"
+                            >
+
+                                {% csrf_token %}
+
+                                <input
+                                    type="hidden"
+                                    name="sale_item_id"
+                                    value="{{ item.id }}"
+                                >
+
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    class="return-quantity"
+                                    min="1"
+                                    max="{{ item.quantity }}"
+                                    value="1"
+                                    required
+                                >
+
+                        </td>
+
+
+                        <td>
+
+                                <input
+                                    type="text"
+                                    name="reason"
+                                    class="return-reason"
+                                    placeholder="Reason"
+                                    maxlength="500"
+                                >
+
+                        </td>
+
+
+                        <td>
+
+                                <button
+                                    type="submit"
+                                    class="process-return-btn"
+                                >
+                                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                                    Process
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    {% elif not error %}
+
+    <div class="return-invoice-card">
+
+        <div class="return-empty">
+
+            <div class="return-empty-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <h3>Search an Invoice</h3>
+
+            <p>
+                Enter an invoice number above to view its sold products
+                and process a return.
+            </p>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================= RETURN HISTORY ================= -->
+
+    <div class="return-history-card">
+
+        <div class="return-history-header">
+
+            <h3>
+                Return History
+            </h3>
+
+            <span class="return-count">
+                {{ returns|length }}
+                return{{ returns|length|pluralize }}
+            </span>
+
+        </div>
+
+
+        <div class="history-table-wrapper">
+
+            {% if returns %}
+
+            <table class="history-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Refund</th>
+                        <th>Reason</th>
+                        <th>Processed By</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for return_item in returns %}
+
+                    <tr>
+
+                        <td>
+                            <strong>
+                                {{ return_item.sale_item.sale.invoice_number }}
+                            </strong>
+                        </td>
+
+
+                        <td>
+                            {{ return_item.sale_item.product.name }}
+                        </td>
+
+
+                        <td>
+                            {{ return_item.quantity }}
+                        </td>
+
+
+                        <td>
+                            <span class="refund-amount">
+                                ₹{{ return_item.refund_amount|floatformat:2 }}
+                            </span>
+                        </td>
+
+
+                        <td>
+                            {% if return_item.reason %}
+                                {{ return_item.reason }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+
+                        <td>
+                            {{ return_item.processed_by.username }}
+                        </td>
+
+
+                        <td>
+                            {{ return_item.created_at|date:"d M Y, h:i A" }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="return-status">
+                                <i class="fa-solid fa-check"></i>
+                                Processed
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+            {% else %}
+
+            <div class="return-empty">
+
+                <div class="return-empty-icon">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                </div>
+
+                <h3>No Returns Yet</h3>
+
+                <p>
+                    Processed product returns will appear here.
+                </p>
+
+            </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

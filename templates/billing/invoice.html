@@ -1,0 +1,942 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Invoice {{ sale.invoice_number }} | POSFlow{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+/* =========================================================
+   INVOICE PAGE
+   All styles are scoped to prevent affecting Admin layout.
+========================================================= */
+
+.invoice-page {
+    --invoice-primary: #3b82f6;
+    --invoice-primary-dark: #2563eb;
+    --invoice-secondary: #10b981;
+    --invoice-accent: #8b5cf6;
+    --invoice-danger: #ef4444;
+    --invoice-light: #ffffff;
+    --invoice-light-gray: #f8fafc;
+    --invoice-gray: #94a3b8;
+    --invoice-dark-gray: #64748b;
+    --invoice-dark: #1e293b;
+    --invoice-darker: #0f172a;
+    --invoice-border: #e2e8f0;
+
+    --invoice-shadow-sm: 0 1px 3px rgba(0,0,0,.1);
+    --invoice-shadow-md: 0 4px 6px rgba(0,0,0,.1);
+    --invoice-shadow-lg: 0 10px 25px rgba(0,0,0,.1);
+
+    --invoice-transition: all .3s cubic-bezier(.4,0,.2,1);
+
+    --invoice-gradient-primary:
+        linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);
+
+    --invoice-gradient-success:
+        linear-gradient(135deg,#10b981 0%,#06b6d4 100%);
+
+    min-height: calc(100vh - 70px);
+    padding: 40px;
+    background: #f1f5f9;
+
+    font-family: 'Inter', sans-serif;
+    color: var(--invoice-dark);
+    line-height: 1.6;
+}
+
+.invoice-page *,
+.invoice-page *::before,
+.invoice-page *::after {
+    box-sizing: border-box;
+}
+
+.invoice-page h1,
+.invoice-page h2,
+.invoice-page h3,
+.invoice-page h4 {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.2;
+}
+
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.invoice-page .invoice-topbar {
+    max-width: 1100px;
+    margin: 0 auto 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.invoice-page .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.invoice-page .brand-icon {
+    width: 48px;
+    height: 48px;
+
+    border-radius: 12px;
+
+    background: var(--invoice-gradient-primary);
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+
+    box-shadow: var(--invoice-shadow-md);
+}
+
+.invoice-page .brand h2 {
+    font-size: 20px;
+    color: var(--invoice-darker);
+    margin: 0;
+}
+
+.invoice-page .brand p {
+    font-size: 12px;
+    color: var(--invoice-dark-gray);
+    margin: 0;
+}
+
+
+/* =========================================================
+   TOP ACTIONS
+========================================================= */
+
+.invoice-page .top-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.invoice-page .btn {
+    border: 0;
+    border-radius: 10px;
+
+    padding: 11px 18px;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    transition: var(--invoice-transition);
+
+    text-decoration: none;
+}
+
+.invoice-page .btn-primary {
+    background: var(--invoice-gradient-primary);
+    color: white;
+}
+
+.invoice-page .btn-light {
+    background: white;
+    color: var(--invoice-dark);
+
+    border: 1px solid var(--invoice-border);
+}
+
+.invoice-page .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--invoice-shadow-md);
+}
+
+
+/* =========================================================
+   INVOICE CARD
+========================================================= */
+
+.invoice-page .invoice-card {
+    max-width: 1100px;
+    margin: auto;
+
+    background: white;
+
+    border-radius: 20px;
+
+    box-shadow: var(--invoice-shadow-lg);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   INVOICE HEADER
+========================================================= */
+
+.invoice-page .invoice-header {
+    padding: 40px;
+
+    background: var(--invoice-gradient-primary);
+
+    color: white;
+
+    display: flex;
+    justify-content: space-between;
+
+    gap: 30px;
+}
+
+.invoice-page .business h1 {
+    font-size: 30px;
+    margin: 0 0 8px;
+}
+
+.invoice-page .business p {
+    font-size: 13px;
+    opacity: .9;
+    margin: 3px 0;
+}
+
+.invoice-page .invoice-title {
+    text-align: right;
+}
+
+.invoice-page .invoice-title h2 {
+    font-size: 28px;
+    margin: 0 0 8px;
+}
+
+.invoice-page .invoice-title p {
+    font-size: 13px;
+    opacity: .9;
+    margin: 0;
+}
+
+
+/* =========================================================
+   INVOICE BODY
+========================================================= */
+
+.invoice-page .invoice-body {
+    padding: 40px;
+}
+
+
+/* =========================================================
+   INFO GRID
+========================================================= */
+
+.invoice-page .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+
+    gap: 20px;
+
+    margin-bottom: 35px;
+}
+
+.invoice-page .info-card {
+    background: var(--invoice-light-gray);
+
+    border-radius: 12px;
+
+    padding: 20px;
+
+    border: 1px solid #eef2f7;
+}
+
+.invoice-page .info-label {
+    color: var(--invoice-gray);
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .7px;
+
+    font-weight: 600;
+
+    margin-bottom: 5px;
+}
+
+.invoice-page .info-value {
+    color: var(--invoice-darker);
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   SECTION TITLE
+========================================================= */
+
+.invoice-page .section-title {
+    font-size: 18px;
+
+    color: var(--invoice-darker);
+
+    margin: 0 0 15px;
+}
+
+
+/* =========================================================
+   ITEMS TABLE
+========================================================= */
+
+.invoice-page .table-wrapper {
+    overflow-x: auto;
+
+    border: 1px solid var(--invoice-border);
+
+    border-radius: 14px;
+}
+
+.invoice-page .items-table {
+    width: 100%;
+
+    border-collapse: collapse;
+
+    min-width: 650px;
+}
+
+.invoice-page .items-table th {
+    background: #f8fafc;
+
+    color: var(--invoice-dark-gray);
+
+    font-size: 12px;
+
+    text-transform: uppercase;
+
+    letter-spacing: .5px;
+
+    padding: 15px;
+
+    text-align: left;
+}
+
+.invoice-page .items-table td {
+    padding: 16px 15px;
+
+    border-top: 1px solid #eef2f7;
+
+    font-size: 13px;
+}
+
+.invoice-page .items-table td:last-child,
+.invoice-page .items-table th:last-child {
+    text-align: right;
+}
+
+.invoice-page .product-name {
+    font-weight: 600;
+
+    color: var(--invoice-darker);
+}
+
+.invoice-page .product-price {
+    color: var(--invoice-dark-gray);
+}
+
+
+/* =========================================================
+   TOTALS
+========================================================= */
+
+.invoice-page .totals {
+    margin: 30px 0 0 auto;
+
+    max-width: 350px;
+}
+
+.invoice-page .total-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 10px 0;
+
+    color: var(--invoice-dark-gray);
+
+    font-size: 14px;
+}
+
+.invoice-page .grand-total {
+    margin-top: 10px;
+
+    padding-top: 18px;
+
+    border-top: 2px solid var(--invoice-darker);
+
+    color: var(--invoice-darker);
+
+    font-size: 21px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   PAYMENT
+========================================================= */
+
+.invoice-page .payment-box {
+    margin-top: 35px;
+
+    padding: 20px;
+
+    border-radius: 14px;
+
+    background: #ecfdf5;
+
+    border: 1px solid #bbf7d0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.invoice-page .payment-box > strong {
+    color: var(--invoice-darker);
+}
+
+.invoice-page .payment-box i {
+    color: var(--invoice-secondary);
+
+    font-size: 22px;
+}
+
+.invoice-page .payment-info {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+.invoice-page .payment-info h4 {
+    font-size: 14px;
+
+    color: var(--invoice-darker);
+
+    margin: 0 0 3px;
+}
+
+.invoice-page .payment-info p {
+    font-size: 12px;
+
+    color: var(--invoice-dark-gray);
+
+    margin: 0;
+}
+
+
+/* =========================================================
+   FOOTER NOTE
+========================================================= */
+
+.invoice-page .footer-note {
+    margin-top: 35px;
+
+    text-align: center;
+
+    color: var(--invoice-gray);
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .invoice-page {
+        padding: 20px 15px;
+    }
+
+    .invoice-page .invoice-topbar {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .invoice-page .top-actions {
+        width: 100%;
+    }
+
+    .invoice-page .top-actions .btn {
+        flex: 1;
+
+        justify-content: center;
+    }
+
+    .invoice-page .invoice-header {
+        padding: 25px;
+
+        flex-direction: column;
+    }
+
+    .invoice-page .invoice-title {
+        text-align: left;
+    }
+
+    .invoice-page .invoice-body {
+        padding: 25px;
+    }
+
+    .invoice-page .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .invoice-page .business h1 {
+        font-size: 24px;
+    }
+}
+
+
+/* =========================================================
+   PRINT
+   Print ONLY the invoice content.
+========================================================= */
+
+@media print {
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    .invoice-page,
+    .invoice-page * {
+        visibility: visible !important;
+    }
+
+    .invoice-page {
+        position: absolute;
+
+        left: 0;
+        top: 0;
+
+        width: 100%;
+
+        min-height: auto;
+
+        padding: 0;
+
+        background: white !important;
+    }
+
+    .invoice-page .invoice-topbar {
+        display: none !important;
+    }
+
+    .invoice-page .invoice-card {
+        max-width: none;
+
+        box-shadow: none;
+
+        border-radius: 0;
+    }
+
+    .invoice-page .invoice-header {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .invoice-page .btn {
+        display: none !important;
+    }
+}
+
+</style>
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="invoice-page">
+
+    <!-- =====================================================
+         TOP BAR
+    ====================================================== -->
+
+    <div class="invoice-topbar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+
+                <i class="fas fa-cash-register"></i>
+
+            </div>
+
+            <div>
+
+                <h2>POSFlow</h2>
+
+                <p>Textile &amp; Retail Billing</p>
+
+            </div>
+
+        </div>
+
+
+        <div class="top-actions">
+
+            <a
+                href="{% url 'billing' %}"
+                class="btn btn-light"
+                data-admin-link
+                data-page="billing"
+            >
+
+                <i class="fas fa-plus"></i>
+
+                New Bill
+
+            </a>
+
+
+            <button
+                type="button"
+                onclick="printBill()"
+                class="btn btn-primary"
+            >
+
+                <i class="fas fa-print"></i>
+
+                Print Bill
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         INVOICE CARD
+    ====================================================== -->
+
+    <main class="invoice-card">
+
+        <!-- ================= INVOICE HEADER ================= -->
+
+        <header class="invoice-header">
+
+            <div class="business">
+
+                <h1>POSFlow</h1>
+
+                <p>Textile &amp; Retail Billing System</p>
+
+                <p>Professional Point of Sale Management</p>
+
+            </div>
+
+
+            <div class="invoice-title">
+
+                <h2>INVOICE</h2>
+
+                <p>{{ sale.invoice_number }}</p>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- ================= INVOICE BODY ================= -->
+
+        <section class="invoice-body">
+
+
+            <!-- ================= INFO ================= -->
+
+            <div class="info-grid">
+
+                <div class="info-card">
+
+                    <div class="info-label">
+                        Invoice Number
+                    </div>
+
+                    <div class="info-value">
+                        {{ sale.invoice_number }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <div class="info-label">
+                        Date &amp; Time
+                    </div>
+
+                    <div class="info-value">
+
+                        {{ sale.created_at|date:"d M Y, h:i A" }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <div class="info-label">
+                        Billing Staff
+                    </div>
+
+                    <div class="info-value">
+
+                        {{ sale.staff.username }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ================= PURCHASED ITEMS ================= -->
+
+            <h3 class="section-title">
+                Purchased Items
+            </h3>
+
+
+            <div class="table-wrapper">
+
+                <table class="items-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Product</th>
+
+                            <th>SKU</th>
+
+                            <th>Qty</th>
+
+                            <th>Unit Price</th>
+
+                            <th>Total</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for item in sale.items.all %}
+
+                        <tr>
+
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+
+
+                            <td>
+
+                                <span class="product-name">
+
+                                    {{ item.product.name }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td class="product-price">
+
+                                {{ item.product.sku }}
+
+                            </td>
+
+
+                            <td>
+                                {{ item.quantity }}
+                            </td>
+
+
+                            <td>
+                                ₹{{ item.price }}
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+                                    ₹{{ item.total }}
+                                </strong>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td
+                                colspan="6"
+                                style="text-align:center;"
+                            >
+
+                                No items found.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+
+            <!-- ================= TOTALS ================= -->
+
+            <div class="totals">
+
+                <div class="total-row">
+
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <strong>
+                        ₹{{ sale.subtotal }}
+                    </strong>
+
+                </div>
+
+
+                <div class="total-row">
+
+                    <span>
+                        Discount
+                    </span>
+
+                    <strong>
+                        ₹{{ sale.discount }}
+                    </strong>
+
+                </div>
+
+
+                <div class="total-row grand-total">
+
+                    <span>
+                        Grand Total
+                    </span>
+
+                    <span>
+                        ₹{{ sale.total }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- ================= PAYMENT ================= -->
+
+            <div class="payment-box">
+
+                <div class="payment-info">
+
+                    <i class="fas fa-circle-check"></i>
+
+                    <div>
+
+                        <h4>
+                            Payment Completed
+                        </h4>
+
+                        <p>
+                            Payment method:
+                            {{ sale.get_payment_method_display }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <strong>
+                    ₹{{ sale.total }}
+                </strong>
+
+            </div>
+
+
+
+            <!-- ================= FOOTER ================= -->
+
+            <div class="footer-note">
+
+                Thank you for your purchase.
+                Please keep this invoice for your records.
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+
+<script>
+
+function printBill() {
+
+    window.print();
+
+}
+
+</script>
+
+{% endblock %}
