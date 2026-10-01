@@ -1,14 +1,14 @@
 from django.db import models
-
-
+from cloudinary.models import CloudinaryField
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
-    image = models.ImageField(
-        upload_to="categories/",
-        blank=True,
-        null=True,
-    )
+    image = CloudinaryField(
+    "image",
+    folder="posflow/categories",
+    blank=True,
+    null=True,
+)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
